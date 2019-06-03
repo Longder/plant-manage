@@ -12,3 +12,8 @@ logging:
 #服务器端口
 server:
   port: 5188
+system:
+  baidu:
+    api_id: 16337570
+    api_key: 4TzDzz7v5SXWNH4tGE7lzmpO
+    secret_key: AUelnrENCC0rVRWfnllOqIgSTMBziN89
