@@ -3,10 +3,10 @@ package com.longder.plant.controller;
 import com.longder.plant.entity.ImageInfo;
 import com.longder.plant.repository.ImageInfoRepository;
 import com.longder.plant.util.BaiduApiUtil;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,5 +59,31 @@ public class IndexController {
         }
         model.addAttribute("list",imageInfoRepository.findAll());
         return "index";
+    }
+
+    /**
+     * 点赞图片
+     * @param imageId
+     * @return
+     */
+    @PostMapping("/like")
+    public String likeImage(Long imageId){
+        ImageInfo imageInfo = imageInfoRepository.getOne(imageId);
+        imageInfo.setLikeCount(imageInfo.getLikeCount()+1);
+        imageInfoRepository.save(imageInfo);
+        return "redirect:/";
+    }
+
+    /**
+     * 踩图片
+     * @param imageId
+     * @return
+     */
+    @PostMapping("/unlike")
+    public String unlikeImage(Long imageId){
+        ImageInfo imageInfo = imageInfoRepository.getOne(imageId);
+        imageInfo.setUnlikeCount(imageInfo.getUnlikeCount() + 1);
+        imageInfoRepository.save(imageInfo);
+        return "redirect:/";
     }
 }
