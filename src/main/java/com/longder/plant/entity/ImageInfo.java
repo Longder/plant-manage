@@ -1,9 +1,13 @@
 package com.longder.plant.entity;
 
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 图片信息
@@ -23,9 +27,6 @@ public class ImageInfo implements Serializable {
     @Column(name = "image_")
     private String image;
 
-    @Transient
-    private String imageValue;
-
     /**
      * 点赞数
      */
@@ -36,5 +37,23 @@ public class ImageInfo implements Serializable {
      */
     @Column(name = "unlike_count_")
     private Integer unlikeCount;
+    /**
+     * 上传时间
+     */
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @Column(name = "upload_time_")
+    private LocalDateTime uploadTime;
+    /**
+     * 详情
+     */
+    @ElementCollection
+    private Set<ImageDetail> imageDetails;
+
+    /**
+     * 评论
+     */
+    @JoinColumn(name = "image_info_id_")
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    private List<Comment> commentList ;
 
 }

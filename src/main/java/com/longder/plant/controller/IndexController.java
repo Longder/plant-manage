@@ -1,12 +1,16 @@
 package com.longder.plant.controller;
 
+import com.longder.plant.entity.Comment;
+import com.longder.plant.entity.ImageDetail;
 import com.longder.plant.entity.ImageInfo;
+import com.longder.plant.repository.CommentRepository;
 import com.longder.plant.repository.ImageInfoRepository;
 import com.longder.plant.util.BaiduApiUtil;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.HashSet;
 
 @Controller
 public class IndexController {
@@ -22,9 +28,11 @@ public class IndexController {
     private BaiduApiUtil baiduApiUtil;
     @Resource
     private ImageInfoRepository imageInfoRepository;
+    @Resource
+    private CommentRepository commentRepository;
 
     /**
-     * 主页默认跳转到登陆页
+     * 主页默认跳转
      * @return
      */
     @GetMapping("/")
@@ -46,19 +54,26 @@ public class IndexController {
             return "index";
         }
         //检查是不是植物
-        boolean flag = baiduApiUtil.checkImage(file.getBytes());
-        if(flag){
+        JSONObject res = baiduApiUtil.checkImage(file.getBytes());
+        JSONArray array = res.getJSONArray("result");
+        if(Double.parseDouble(array.getJSONObject(0).get("score").toString())!=0){
             //入库
             ImageInfo imageInfo = new ImageInfo();
             imageInfo.setImage("data:image/jpeg;base64,"+DatatypeConverter.printBase64Binary(file.getBytes()));
             imageInfo.setLikeCount(0);
             imageInfo.setUnlikeCount(0);
+            imageInfo.setImageDetails(new HashSet<>());
+            for(int i=0;i<array.length();i++){
+                imageInfo.getImageDetails().add(new ImageDetail(array.getJSONObject(i).get("name").toString(),
+                        Double.parseDouble(array.getJSONObject(i).get("score").toString())));
+            }
+            imageInfo.setUploadTime(LocalDateTime.now());
             imageInfoRepository.save(imageInfo);
         }else{
             model.addAttribute("error","您上传的不是植物，请重新上传");
         }
         model.addAttribute("list",imageInfoRepository.findAll());
-        return "index";
+        return "redirect:/";
     }
 
     /**
@@ -84,6 +99,18 @@ public class IndexController {
         ImageInfo imageInfo = imageInfoRepository.getOne(imageId);
         imageInfo.setUnlikeCount(imageInfo.getUnlikeCount() + 1);
         imageInfoRepository.save(imageInfo);
+        return "redirect:/";
+    }
+
+    /**
+     * 给图片添加一个评论
+     * @param comment
+     * @return
+     */
+    @PostMapping("/comment")
+    public String addComment(Comment comment){
+        comment.setCommentTime(LocalDateTime.now());
+        commentRepository.save(comment);
         return "redirect:/";
     }
 }

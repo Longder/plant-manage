@@ -18,12 +18,12 @@ public class BaiduApiUtil {
     private String secretKey;
 
     /**
-     * 检查图片是否是植物
+     * 百度api校验图片
      *
      * @param imageBytes
      * @return true: 是植物 false: 不是植物
      */
-    public boolean checkImage(byte[] imageBytes) {
+    public JSONObject checkImage(byte[] imageBytes) {
         // 初始化一个AipImageClassify
         AipImageClassify client = new AipImageClassify(apiId, apiKey, secretKey);
         HashMap<String, String> options = new HashMap<String, String>();
@@ -31,12 +31,7 @@ public class BaiduApiUtil {
         client.setConnectionTimeoutInMillis(2000);
         client.setSocketTimeoutInMillis(60000);
         // 调用接口
-        JSONObject res = client.plantDetect(imageBytes, options);
-        JSONArray array = res.getJSONArray("result");
-        if(Double.parseDouble(array.getJSONObject(0).get("score").toString())==0){
-            return false;
-        }else{
-            return true;
-        }
+        return client.plantDetect(imageBytes, options);
+
     }
 }
